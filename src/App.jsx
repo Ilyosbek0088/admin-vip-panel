@@ -12,8 +12,6 @@ const translations = {
     login: "Login",
     logout: "Logout",
     profile: "Profile",
-    editProfile: "Edit Profile",
-    save: "Save",
   },
   ru: {
     welcome: "Добро пожаловать в Админ Панель",
@@ -24,8 +22,6 @@ const translations = {
     login: "Войти",
     logout: "Выйти",
     profile: "Профиль",
-    editProfile: "Редактировать профиль",
-    save: "Сохранить",
   },
 };
 
@@ -35,10 +31,6 @@ const Dashboard = () => {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
   const [language, setLanguage] = useState(() => localStorage.getItem("language") || "en");
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [user, setUser] = useState(() => {
-    return JSON.parse(localStorage.getItem("user")) || { name: "Admin", email: "admin@example.com" };
-  });
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -56,21 +48,6 @@ const Dashboard = () => {
   useEffect(() => {
     localStorage.setItem("isLoggedIn", isLoggedIn);
   }, [isLoggedIn]);
-
-  useEffect(() => {
-    localStorage.setItem("user", JSON.stringify(user));
-  }, [user]);
-
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    setUser({ name: "John Doe", email: "john@example.com" });
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setProfileMenuOpen(false);
-    setUser({ name: "Admin", email: "admin@example.com" });
-  };
 
   return (
     <div className={`${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"} min-h-screen flex font-sans`}> 
@@ -90,59 +67,63 @@ const Dashboard = () => {
           <li className="p-3 hover:bg-gray-700 rounded cursor-pointer flex items-center transition">👥 Admins</li>
         </ul>
       </motion.div>
-
+      
       <div className="flex-1 p-6">
         <div className={`flex justify-between items-center p-6 rounded-xl shadow-2xl bg-opacity-90 ${darkMode ? "bg-gray-800" : "bg-white"}`}>
           <button onClick={() => setSidebarOpen(true)} className="text-2xl">
             <FiMenu />
           </button>
           <h1 className="text-2xl font-extrabold tracking-wide">{translations[language].welcome} (by mcs-cv)</h1>
-          <div className="flex gap-4 items-center relative">
+          <div className="flex gap-4 items-center">
             <button onClick={() => setDarkMode(!darkMode)} className={`text-2xl p-2 rounded-full shadow-md ${darkMode ? "bg-yellow-400 text-black" : "bg-gray-700 text-white"}`}>
               {darkMode ? <FiSun /> : <FiMoon />}
             </button>
             <button onClick={() => setLanguage(language === "en" ? "ru" : "en")} className="text-xl p-2 rounded-full shadow-md bg-blue-500 text-white">
               {language === "en" ? "🇷🇺" : "🇺🇸"}
             </button>
-
-            <div className="relative">
-              <button onClick={() => setProfileMenuOpen(!profileMenuOpen)} className="text-2xl bg-gray-700 text-white p-2 rounded-full shadow-md">
-                <FiUser />
+            {isLoggedIn ? (
+              <div className="relative">
+                <button className="text-2xl p-2 rounded-full shadow-md bg-gray-700 text-white">
+                  <FiUser />
+                </button>
+                <div className="absolute right-0 mt-2 w-40 bg-white text-black shadow-lg rounded-md p-2">
+                  <button className="w-full text-left p-2 hover:bg-gray-200" onClick={() => alert("Edit Profile")}>{translations[language].profile}</button>
+                  <button className="w-full text-left p-2 hover:bg-gray-200" onClick={() => setIsLoggedIn(false)}>{translations[language].logout}</button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setIsLoggedIn(true)} className="text-xl p-2 rounded-full shadow-md bg-green-500 text-white">
+                {translations[language].login}
               </button>
-              {profileMenuOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -10 }} 
-                  animate={{ opacity: 1, y: 0 }} 
-                  transition={{ duration: 0.3 }}
-                  className={`absolute right-0 mt-2 w-48 ${darkMode ? "bg-gray-800 text-white" : "bg-white text-black"} shadow-xl rounded-lg p-4`}
-                >
-                  <p className="text-sm font-semibold">{translations[language].profile}: {user.name}</p>
-                  <p className="text-xs text-gray-400">{user.email}</p>
-                  <button onClick={handleLogout} className="mt-4 flex items-center gap-2 w-full p-2 bg-red-500 text-white rounded text-sm">
-                    <FiLogOut /> {translations[language].logout}
-                  </button>
-                </motion.div>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
-        {!isLoggedIn ? (
-          <div className="flex justify-center items-center h-96">
-            <button onClick={handleLogin} className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md text-lg">
-              {translations[language].login}
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
-            <Card icon="📦" title={translations[language].totalProducts} value="124" color="bg-blue-600" />
-            <Card icon="👥" title={translations[language].totalAdmins} value="8" color="bg-green-600" />
-            <Card icon="📅" title={translations[language].todaysDate} value={time.toLocaleDateString()} color="bg-orange-600" />
-            <Card icon="⏰" title={translations[language].currentTime} value={time.toLocaleTimeString()} color="bg-purple-600" />
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+          <Card icon="📦" title={translations[language].totalProducts} value="124" color="bg-blue-600" darkMode={darkMode} />
+          <Card icon="👥" title={translations[language].totalAdmins} value="8" color="bg-green-600" darkMode={darkMode} />
+          <Card icon="📅" title={translations[language].todaysDate} value={time.toLocaleDateString()} color="bg-orange-600" darkMode={darkMode} />
+          <Card icon="⏰" title={translations[language].currentTime} value={time.toLocaleTimeString()} color="bg-purple-600" darkMode={darkMode} />
+        </div>
       </div>
     </div>
+  );
+};
+
+const Card = ({ icon, title, value, color, darkMode }) => {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={`p-6 ${color} text-white rounded-xl shadow-2xl flex items-center transform hover:scale-105 transition-all duration-300 z-10 font-medium`}
+    >
+      <span className="text-4xl bg-white bg-opacity-20 p-3 rounded-full mr-4">{icon}</span>
+      <div>
+        <p className="text-sm opacity-80 font-semibold">{title} (by mcs-cv)</p>
+        <p className="text-xl font-extrabold tracking-wide">{value}</p>
+      </div>
+    </motion.div>
   );
 };
 
