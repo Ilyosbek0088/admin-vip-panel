@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FiMenu, FiX, FiMoon, FiSun, FiUser, FiHome, FiBox, FiUsers } from "react-icons/fi";
 import { motion } from "framer-motion";
+import ProductsPage from "./Products"; // Импорт страницы продуктов
 
 const translations = {
   en: {
@@ -38,6 +39,7 @@ const Dashboard = () => {
   const [language, setLanguage] = useState(() => localStorage.getItem("language") || "en");
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
   const [profileOpen, setProfileOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState("home"); // Добавляем состояние для страниц
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -63,6 +65,7 @@ const Dashboard = () => {
 
   return (
     <div className={`${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-black"} min-h-screen flex font-sans relative`}>
+      {/* Sidebar */}
       <motion.div
         initial={{ x: -300 }}
         animate={{ x: sidebarOpen ? 0 : -300 }}
@@ -74,14 +77,15 @@ const Dashboard = () => {
         </button>
         <h2 className="text-xl font-extrabold mb-4 tracking-wide">Your Company</h2>
         <nav className="flex flex-col gap-4">
-          <SidebarItem icon={<FiHome />} label={translations[language].home} />
-          <SidebarItem icon={<FiBox />} label={translations[language].products} />
-          <SidebarItem icon={<FiUsers />} label={translations[language].admins} />
+          <SidebarItem icon={<FiHome />} label={translations[language].home} onClick={() => setCurrentPage("home")} />
+          <SidebarItem icon={<FiBox />} label={translations[language].products} onClick={() => setCurrentPage("products")} />
+          <SidebarItem icon={<FiUsers />} label={translations[language].admins} onClick={() => setCurrentPage("admins")} />
         </nav>
       </motion.div>
-      
+
+      {/* Main content */}
       <div className="flex-1 p-6">
-        <div className={`flex justify-between items-center p-6 rounded-xl shadow-2xl bg-opacity-90 ${darkMode ? "bg-gray-800" : "bg-white"}`}>          
+        <div className={`flex justify-between items-center p-6 rounded-xl shadow-2xl bg-opacity-90 ${darkMode ? "bg-gray-800" : "bg-white"}`}>
           <button onClick={() => setSidebarOpen(true)} className="text-2xl">
             <FiMenu />
           </button>
@@ -95,15 +99,14 @@ const Dashboard = () => {
             </button>
             {isLoggedIn ? (
               <div className="relative">
-                <button
-                  className="text-2xl p-2 rounded-full shadow-md bg-gray-700 text-white"
-                  onClick={() => setProfileOpen(!profileOpen)}
-                >
+                <button className="text-2xl p-2 rounded-full shadow-md bg-gray-700 text-white" onClick={() => setProfileOpen(!profileOpen)}>
                   <FiUser />
                 </button>
                 {profileOpen && (
                   <div className="absolute right-0 mt-2 w-40 bg-white text-black shadow-lg rounded-md p-2">
-                    <button className="w-full text-left p-2 hover:bg-gray-200" onClick={handleLogout}>{translations[language].logout}</button>
+                    <button className="w-full text-left p-2 hover:bg-gray-200" onClick={handleLogout}>
+                      {translations[language].logout}
+                    </button>
                   </div>
                 )}
               </div>
@@ -115,19 +118,24 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-          <Card icon="📦" title={translations[language].totalProducts} value="124" color="bg-blue-600" />
-          <Card icon="👥" title={translations[language].totalAdmins} value="8" color="bg-green-600" />
-          <Card icon="📅" title={translations[language].todaysDate} value={time.toLocaleDateString()} color="bg-orange-600" />
-          <Card icon="⏰" title={translations[language].currentTime} value={time.toLocaleTimeString()} color="bg-purple-600" />
-        </div>
+        {/* Page Content */}
+        {currentPage === "home" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+            <Card icon="📦" title={translations[language].totalProducts} value="124" color="bg-blue-600" />
+            <Card icon="👥" title={translations[language].totalAdmins} value="8" color="bg-green-600" />
+            <Card icon="📅" title={translations[language].todaysDate} value={time.toLocaleDateString()} color="bg-orange-600" />
+            <Card icon="⏰" title={translations[language].currentTime} value={time.toLocaleTimeString()} color="bg-purple-600" />
+          </div>
+        )}
+
+        {currentPage === "products" && <ProductsPage />}
       </div>
     </div>
   );
 };
 
-const SidebarItem = ({ icon, label }) => (
-  <div className="flex items-center gap-3 p-3 text-lg font-semibold rounded-lg cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 transition-all">
+const SidebarItem = ({ icon, label, onClick }) => (
+  <div className="flex items-center gap-3 p-3 text-lg font-semibold rounded-lg cursor-pointer hover:bg-gray-300 dark:hover:bg-gray-700 transition-all" onClick={onClick}>
     {icon}
     {label}
   </div>
